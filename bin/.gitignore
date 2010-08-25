@@ -1,0 +1,7 @@
+# gitignore
+bin/
+.settings/
+local.properties
+*~
+.DS_Store
+*.tmproj
