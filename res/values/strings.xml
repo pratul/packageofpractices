@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, POPHome!</string>
-    <string name="app_name">PoP</string>
+    <string name="app_name">Package of Practices</string>
+    
+    <string name="menu_about">About</string>
 </resources>
