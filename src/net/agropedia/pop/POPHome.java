@@ -30,34 +30,6 @@ public class POPHome extends ListActivity {
 
     }
 
-
-    @Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inf = getMenuInflater();
-		inf.inflate(R.menu.about, menu);
-		return true;
-
-	}
-
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.mnu_about:
-			Context context = getApplicationContext();
-			CharSequence text = "Agroid\nhttp://agropedia.iitk.ac.in";
-			int duration = Toast.LENGTH_LONG;
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.setGravity(Gravity.CENTER, 0, 0);
-			toast.show();
-
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-
 	public class HomeAdapter extends BaseAdapter {
 
     	private final ArrayList<String> mItemsList = new ArrayList<String>();
@@ -79,6 +51,31 @@ public class POPHome extends ListActivity {
 		}
 
     }
+
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inf = getMenuInflater();
+		inf.inflate(R.menu.about, menu);
+		return true;
+
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.mnu_about:
+			Context context = getApplicationContext();
+			CharSequence text = "Part of the Agropedia project\nhttp://agropedia.iitk.ac.in";
+			int duration = Toast.LENGTH_LONG;
+			Toast toast = Toast.makeText(context, text, duration);
+			toast.setGravity(Gravity.CENTER, 0, 0);
+			toast.show();
+
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 
 }
 
