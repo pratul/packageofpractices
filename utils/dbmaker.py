@@ -5,8 +5,10 @@
 
 import xmlrpclib, sys
 
-XMLRPC_SERVER = "http://staging?q=services/xmlrpc"
+XMLRPC_SERVER = "http://staging/services/xmlrpc"
 
 drupal = xmlrpclib.ServerProxy(XMLRPC_SERVER)
 drupal.system.connect()
-print drupal.agro.getpopnids()
+nids = drupal.agro.getpopnids()
+for n in nids:
+    print drupal.node.get(n, ['nid', 'title'])
