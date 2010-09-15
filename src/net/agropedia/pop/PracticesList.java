@@ -4,10 +4,11 @@
 
 package net.agropedia.pop;
 
+
 import android.app.ListActivity;
 import android.os.Bundle;
 
-public class POPlist extends ListActivity {
+public class PracticesList extends ListActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

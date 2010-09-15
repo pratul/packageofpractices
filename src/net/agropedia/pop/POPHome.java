@@ -10,6 +10,7 @@ import java.util.Arrays;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -42,12 +43,13 @@ public class POPHome extends ListActivity {
 
 		switch (position) {
 		case 0:
-			Intent popList = new Intent(getBaseContext(), POPlist.class);
+			Intent popList = new Intent(getBaseContext(), PracticesList.class);
 			startActivity(popList);
+			break;
 		case 1:
-//			Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse("http://agropedia.iitk.ac.in"));
-//			startActivity(browser);
-
+			Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse("http://agropedia.iitk.ac.in"));
+			startActivity(browser);
+			break;
 		}
 
 	}
@@ -59,7 +61,7 @@ public class POPHome extends ListActivity {
     	private final LayoutInflater mInflater;
 
     	public HomeAdapter() {
-    		mItemsList = new ArrayList<String>(Arrays.asList("Package of Practices", "Agropedia.net on the web"));
+    		mItemsList = new ArrayList<String>(Arrays.asList("Show practices", "Agropedia.net on the web"));
     		mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     	}
 
@@ -101,17 +103,20 @@ public class POPHome extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.mnu_about:
-			Context context = getApplicationContext();
-			CharSequence text = "Part of the Agropedia project\nhttp://agropedia.iitk.ac.in";
-			int duration = Toast.LENGTH_LONG;
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.setGravity(Gravity.CENTER, 0, 0);
-			toast.show();
-
+			genToast("Part of the Agropedia project\nhttp://agropedia.iitk.ac.in");
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	public void genToast(String t) {
+		Context ct = getApplicationContext();
+		int duration = Toast.LENGTH_LONG;
+		Toast toast = Toast.makeText(ct, t, duration);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
+
 	}
 
 }
