@@ -5,10 +5,11 @@
 package net.agropedia.pop;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -28,33 +29,72 @@ public class PracticesList extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		ListView lv = getListView();
-		mAdapter = new PracticesListAdapter();
+
 		tf = Typeface.createFromAsset(getAssets(), "fonts/Lohit-Hindi.ttf");
 
 		dbm = new DBManager(this);
 		dbm.open();
 
+		mAdapter = new PracticesListAdapter();
 		lv.setAdapter(mAdapter);
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+
+		Intent pv = new Intent(getBaseContext(), PracticesView.class);
+		Integer nid = (Integer) mAdapter.mNIDs.get(position);
+
+		Bundle b = new Bundle();
+		b.putInt("nid", nid);
+
+		pv.putExtras(b);
+		startActivity(pv);
 	}
 
 
 	public class PracticesListAdapter extends BaseAdapter {
-    	private final ArrayList<String> mItemsList;
+    	private final ArrayList<Integer> mNIDs;
+    	private final ArrayList<String> mNodeTitles;
     	private final LayoutInflater mInflater;
+    	private Cursor c;
     	TextView tvr;
 
     	public PracticesListAdapter() {
-    		mItemsList = new ArrayList<String>(Arrays.asList("हरे चारे हेतु हाइब्रिड नेपियर की खेती", "बाजरा का हरा चारा", "ग्वार का हरा चारा", "ज्वार का हरा चारा", "मक्का का हरा चारा", "लोबिया का हरा चारा", "धान की उन्नतशील खेती", "Sugarcane Package of Practices", "Package of practices for Soyabean", "Package of practices for Maize"));
+    		if (dbm.db == null) {
+    			dbm.open();
+    		}
+    		mNIDs = new ArrayList<Integer>();
+    		mNodeTitles = new ArrayList<String>();
+    		getNodesData();
     		mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
     	}
 
-		public int getCount() {
-			return mItemsList.size();
+    	private void getNodesData() {
+
+    		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, null);
+    		c.moveToFirst();
+
+    		do {
+    			mNIDs.add(c.getInt(0));
+    			mNodeTitles.add(c.getString(1));
+    		} while (c.moveToNext());
+
+    		if (c != null && !c.isClosed()) {
+    			c.close();
+    		}
+
+    	}
+
+
+    	public int getCount() {
+			return mNodeTitles.size();
 		}
 
 		public Object getItem(int position) {
-			return mItemsList.get(position);
+			return mNodeTitles.get(position);
 		}
 
 		public long getItemId(int position) {
@@ -67,7 +107,7 @@ public class PracticesList extends ListActivity {
 			}
 
 			tvr = (TextView) convertView.findViewById(R.id.tv_practiceslist_row);
-			tvr.setText(mItemsList.get(position));
+			tvr.setText(mNodeTitles.get(position));
 			tvr.setTypeface(tf);
 
 			return convertView;
