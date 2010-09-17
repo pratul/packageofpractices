@@ -1,3 +1,8 @@
+/**
+ * Copyright 2010 (c) Pratul Kalia
+ */
+
+
 package net.agropedia.pop;
 
 import android.content.Context;
@@ -14,7 +19,7 @@ public class DBManager {
 	private static final String DATABASE_NAME = "pop.db";
 	private static final int DATABASE_VERSION = 1;
 
-	private static final String CREATE_TABLE_PRACTICES = "create table feeds (" +
+	private static final String CREATE_TABLE_PRACTICES = "create table practices (" +
 	BaseColumns._ID + " integer primary key autoincrement, " +
 	"nid integer not null, "  +
 	"title text not null, " +
@@ -63,27 +68,6 @@ public class DBManager {
 	public void close() {
 		db.close();
 	}
-
-//	public ArrayList<Integer> getCategories() {
-//		ArrayList<Integer> cats = new ArrayList<Integer>();
-//
-//		if (db == null) {
-//			open();
-//		}
-//
-//		Cursor c = db.query("categories", new String[] {"_id", "name"}, null, null, null, null, null);
-//
-//		if (c.moveToFirst()) {
-//			do {
-//				cats.add(c);
-//			} while (c.moveToNext());
-//		}
-//		if (c != null && !c.isClosed()) {
-//			c.close();
-//		}
-//
-//		return cats;
-//	}
 
 
 	private static class DBHelper extends SQLiteOpenHelper {
