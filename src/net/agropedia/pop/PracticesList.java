@@ -2,6 +2,7 @@
  * Copyright 2010 (c) Pratul Kalia
  */
 
+
 package net.agropedia.pop;
 
 import java.util.ArrayList;
@@ -59,7 +60,8 @@ public class PracticesList extends ListActivity {
     	private final ArrayList<String> mNodeTitles;
     	private final LayoutInflater mInflater;
     	private Cursor c;
-    	TextView tvr;
+    	TextView tvtitle;
+    	TextView tvnid;
 
     	public PracticesListAdapter() {
     		if (dbm.db == null) {
@@ -74,7 +76,7 @@ public class PracticesList extends ListActivity {
 
     	private void getNodesData() {
 
-    		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, null);
+    		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, "nid DESC");
     		c.moveToFirst();
 
     		do {
@@ -106,9 +108,14 @@ public class PracticesList extends ListActivity {
 				convertView = mInflater.inflate(R.layout.lv_practiceslist_row, null);
 			}
 
-			tvr = (TextView) convertView.findViewById(R.id.tv_practiceslist_row);
-			tvr.setText(mNodeTitles.get(position));
-			tvr.setTypeface(tf);
+			tvtitle = (TextView) convertView.findViewById(R.id.tv_practiceslist_row);
+			tvnid   = (TextView) convertView.findViewById(R.id.tv_practiceslist_nid);
+
+			tvtitle.setText(mNodeTitles.get(position));
+			tvtitle.setTypeface(tf);
+
+			String bldr = "(Node ID " + String.valueOf(mNIDs.get(position)) + ")";
+			tvnid.setText(bldr);
 
 			return convertView;
 		}
