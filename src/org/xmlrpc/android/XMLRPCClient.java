@@ -25,15 +25,15 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 /**
  * XMLRPCClient allows to call remote XMLRPC method.
- * 
+ *
  * <p>
  * The following table shows how XML-RPC types are mapped to java call parameters/response values.
  * </p>
- * 
+ *
  * <p>
  * <table border="2" align="center" cellpadding="5">
  * <thead><tr><th>XML-RPC Type</th><th>Call Parameters</th><th>Call Response</th></tr></thead>
- * 
+ *
  * <tbody>
  * <td>int, i4</td><td>byte<br />Byte<br />short<br />Short<br />int<br />Integer</td><td>int<br />Integer</td>
  * </tr>
@@ -71,9 +71,9 @@ import org.xmlpull.v1.XmlPullParserFactory;
  */
 
 public class XMLRPCClient extends XMLRPCCommon {
-	private HttpClient client;
-	private HttpPost postMethod;
-	private HttpParams httpParams;
+	private final HttpClient client;
+	private final HttpPost postMethod;
+	private final HttpParams httpParams;
 
 	/**
 	 * XMLRPCClient constructor. Creates new instance based on server URI
@@ -82,15 +82,15 @@ public class XMLRPCClient extends XMLRPCCommon {
 	public XMLRPCClient(URI uri) {
 		postMethod = new HttpPost(uri);
 		postMethod.addHeader("Content-Type", "text/xml");
-		
+
 		// WARNING
-		// I had to disable "Expect: 100-Continue" header since I had 
-		// two second delay between sending http POST request and POST body 
+		// I had to disable "Expect: 100-Continue" header since I had
+		// two second delay between sending http POST request and POST body
 		httpParams = postMethod.getParams();
 		HttpProtocolParams.setUseExpectContinue(httpParams, false);
 		client = new DefaultHttpClient();
 	}
-	
+
 	/**
 	 * Convenience constructor. Creates new instance based on server String address
 	 * @param XMLRPC server address
@@ -112,10 +112,10 @@ public class XMLRPCClient extends XMLRPCCommon {
 	 * @param XMLRPC server address
 	 * @param HTTP Server - Basic Authentication - Username
 	 * @param HTTP Server - Basic Authentication - Password
-	 */	
+	 */
 	public XMLRPCClient(URI uri, String username, String password) {
         this(uri);
-        
+
         ((DefaultHttpClient) client).getCredentialsProvider().setCredentials(
         new AuthScope(uri.getHost(), uri.getPort(),AuthScope.ANY_REALM),
         new UsernamePasswordCredentials(username, password));
@@ -157,7 +157,7 @@ AuthScope.ANY_REALM),
 	 * Call method with optional parameters. This is general method.
 	 * If you want to call your method with 0-8 parameters, you can use more
 	 * convenience call() methods
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param params parameters to pass to method (may be null if method has no parameters)
 	 * @return deserialized method return value
@@ -190,16 +190,18 @@ AuthScope.ANY_REALM),
 			// setup pull parser
 			XmlPullParser pullParser = XmlPullParserFactory.newInstance().newPullParser();
 			entity = response.getEntity();
-			Reader reader = new InputStreamReader(new BufferedInputStream(entity.getContent()));
+
+			//EDIT by lut4rp - 8192 added.
+			Reader reader = new InputStreamReader(new BufferedInputStream(entity.getContent(), 8192));
 // for testing purposes only
 // reader = new StringReader("<?xml version='1.0'?><methodResponse><params><param><value>\n\n\n</value></param></params></methodResponse>");
 			pullParser.setInput(reader);
-			
+
 			// lets start pulling...
 			pullParser.nextTag();
 			pullParser.require(XmlPullParser.START_TAG, null, Tag.METHOD_RESPONSE);
-			
-			pullParser.nextTag(); // either Tag.PARAMS (<params>) or Tag.FAULT (<fault>)  
+
+			pullParser.nextTag(); // either Tag.PARAMS (<params>) or Tag.FAULT (<fault>)
 			String tag = pullParser.getName();
 			if (tag.equals(Tag.PARAMS)) {
 				// normal response
@@ -207,7 +209,7 @@ AuthScope.ANY_REALM),
 				pullParser.require(XmlPullParser.START_TAG, null, Tag.PARAM);
 				pullParser.nextTag(); // Tag.VALUE (<value>)
 				// no parser.require() here since its called in XMLRPCSerializer.deserialize() below
-				
+
 				// deserialize result
 				Object obj = iXMLRPCSerializer.deserialize(pullParser);
 				entity.consumeContent();
@@ -237,7 +239,7 @@ AuthScope.ANY_REALM),
 			throw new XMLRPCException(e);
 		}
 	}
-	
+
 	private String methodCall(String method, Object[] params)
 	throws IllegalArgumentException, IllegalStateException, IOException {
 		StringWriter bodyWriter = new StringWriter();
@@ -246,7 +248,7 @@ AuthScope.ANY_REALM),
 		serializer.startTag(null, Tag.METHOD_CALL);
 		// set method name
 		serializer.startTag(null, Tag.METHOD_NAME).text(method).endTag(null, Tag.METHOD_NAME);
-		
+
 		serializeParams(params);
 
 		serializer.endTag(null, Tag.METHOD_CALL);
@@ -257,7 +259,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with no parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @return deserialized method return value
 	 * @throws XMLRPCException
@@ -265,10 +267,10 @@ AuthScope.ANY_REALM),
 	public Object call(String method) throws XMLRPCException {
 		return callEx(method, null);
 	}
-	
+
 	/**
 	 * Convenience method call with one parameter
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's parameter
 	 * @return deserialized method return value
@@ -280,10 +282,10 @@ AuthScope.ANY_REALM),
 		};
 		return callEx(method, params);
 	}
-	
+
 	/**
 	 * Convenience method call with two parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -296,10 +298,10 @@ AuthScope.ANY_REALM),
 		};
 		return callEx(method, params);
 	}
-	
+
 	/**
 	 * Convenience method call with three parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -316,7 +318,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with four parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -334,7 +336,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with five parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -353,7 +355,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with six parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -373,7 +375,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with seven parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
@@ -394,7 +396,7 @@ AuthScope.ANY_REALM),
 
 	/**
 	 * Convenience method call with eight parameters
-	 * 
+	 *
 	 * @param method name of method to call
 	 * @param p0 method's 1st parameter
 	 * @param p1 method's 2nd parameter
