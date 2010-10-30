@@ -5,11 +5,6 @@
 
 package net.agropedia.pop;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,7 +18,6 @@ public class DBManager {
 
 	private static final String DATABASE_NAME = "pop.db";
 	private static final int DATABASE_VERSION = 1;
-	private static final String DATABASE_PATH = "/data/data/net.agropedia.pop/databases/";
 
 	private static final String CREATE_TABLE_PRACTICES = "create table practices (" +
 	BaseColumns._ID + " integer primary key autoincrement, " +
@@ -66,26 +60,6 @@ public class DBManager {
 		catch (SQLiteException e) {
 			db = dbHelper.getReadableDatabase();
 			Log.w("POP", "Got readable database.");
-		}
-
-		try {
-	    	InputStream inp = ctx.getAssets().open(DATABASE_NAME);
-	    	String path = DATABASE_PATH + DATABASE_NAME;
-	    	OutputStream out = new FileOutputStream(path);
-
-	    	byte[] buffer = new byte[1024];
-	    	int length;
-	    	while ((length = inp.read(buffer))>0){
-	    		out.write(buffer, 0, length);
-	    	}
-
-	    	out.flush();
-	    	out.close();
-	    	inp.close();
-	    	Log.w("POP", "Database file copied from assets!");
-		}
-		catch (IOException e) {
-			throw new Error("Error copying database");
 		}
 
 		return this;

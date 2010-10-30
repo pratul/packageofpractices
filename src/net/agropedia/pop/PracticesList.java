@@ -5,7 +5,11 @@
 
 package net.agropedia.pop;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.xmlrpc.android.XMLRPCClient;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -13,6 +17,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +30,17 @@ public class PracticesList extends ListActivity {
 	private PracticesListAdapter mAdapter;
 	private static Typeface tf;
 	private DBManager dbm;
+	private URI uri;
+	private XMLRPCClient client;
+	private static LayoutInflater mInflater;
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		ListView lv = getListView();
 
+		mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		tf = Typeface.createFromAsset(getAssets(), "fonts/Lohit-Hindi.ttf");
 
 		dbm = new DBManager(this);
@@ -58,20 +68,41 @@ public class PracticesList extends ListActivity {
 	public class PracticesListAdapter extends BaseAdapter {
     	private final ArrayList<Integer> mNIDs;
     	private final ArrayList<String> mNodeTitles;
-    	private final LayoutInflater mInflater;
     	private Cursor c;
     	TextView tvtitle;
     	TextView tvnid;
 
+    	@SuppressWarnings("unchecked")
     	public PracticesListAdapter() {
-    		if (dbm.db == null) {
-    			dbm.open();
-    		}
     		mNIDs = new ArrayList<Integer>();
     		mNodeTitles = new ArrayList<String>();
-    		getNodesData();
-    		mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+    		uri = URI.create("http://a.pratul.in/services/xmlrpc");
+    		client = new XMLRPCClient(uri);
+
+    		try {
+    			Object[] r = (Object[]) client.callEx("agro.getpopnids", null);
+
+    			for (Object i : r) {
+    				String[] p = {"title"};
+    				Object[] params = {i, p};
+
+    				String tmptoSave = i.toString();
+    				Integer toSave = Integer.parseInt(tmptoSave);
+    				mNIDs.add(toSave);
+
+    				HashMap<String, String> n = (HashMap<String, String>) client.callEx("node.get", params);
+
+    				for (String k : n.keySet()) {
+    					String val = n.get(k);
+    					mNodeTitles.add(val);
+    				}
+    			}
+
+    		}
+    		catch (Exception e) {
+    			Log.w("POP", "ERROR AGAYA LOL", e);
+    		}
     	}
 
     	private void getNodesData() {
@@ -91,6 +122,9 @@ public class PracticesList extends ListActivity {
     	}
 
 
+    	/**
+    	 * Compulsory adapter methods
+    	 */
     	public int getCount() {
 			return mNodeTitles.size();
 		}

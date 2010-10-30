@@ -12,6 +12,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ public class PracticesView extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.w("POP pracview", "And we have... TOUCHDOWN!");
 		Bundle b = getIntent().getExtras();
 		nid = b.getInt("nid");
 
