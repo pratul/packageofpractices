@@ -25,6 +25,8 @@ public class DBManager {
 	"title text not null, " +
 	"created integer, " +
 	"changed integer, " +
+	"teaser TEXT, " +
+	"body TEXT, " +
 	"f_introduction TEXT, " +
 	"f_climatic TEXT, " +
 	"f_soil TEXT, " +

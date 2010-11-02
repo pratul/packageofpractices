@@ -12,6 +12,7 @@ import java.util.HashMap;
 import org.xmlrpc.android.XMLRPCClient;
 
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -72,11 +73,21 @@ public class PracticesList extends ListActivity {
     	TextView tvtitle;
     	TextView tvnid;
 
-    	@SuppressWarnings("unchecked")
     	public PracticesListAdapter() {
     		mNIDs = new ArrayList<Integer>();
     		mNodeTitles = new ArrayList<String>();
 
+    		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, "nid DESC");
+    		if (c.moveToFirst()) {
+    			getDataFromDB();
+    			storeDataToDB();
+    		} else {
+    			getDataFromNetwork(); // once we have it in db, then...
+    		}
+    	}
+
+    	@SuppressWarnings("unchecked")
+    	private void getDataFromNetwork() {
     		uri = URI.create("http://a.pratul.in/services/xmlrpc");
     		client = new XMLRPCClient(uri);
 
@@ -103,10 +114,10 @@ public class PracticesList extends ListActivity {
     		catch (Exception e) {
     			Log.w("POP", "ERROR AGAYA LOL", e);
     		}
+
     	}
 
-    	private void getNodesData() {
-
+    	private void getDataFromDB() {
     		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, "nid DESC");
     		c.moveToFirst();
 
@@ -119,6 +130,16 @@ public class PracticesList extends ListActivity {
     			c.close();
     		}
 
+    	}
+
+    	private void storeDataToDB() {
+    		ContentValues values = new ContentValues();
+
+    		for (int pos = 0; pos < mNIDs.size(); pos++) {
+    			values.put("nid", mNIDs.get(pos));
+    			values.put("title", mNodeTitles.get(pos));
+    			dbm.db.insert("practices", null, values);
+    		}
     	}
 
 

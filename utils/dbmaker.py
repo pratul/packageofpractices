@@ -5,7 +5,7 @@
 
 import xmlrpclib, sys
 
-XMLRPC_SERVER = "http://staging/services/xmlrpc"
+XMLRPC_SERVER = "http://a.pratul.in/services/xmlrpc"
 
 drupal = xmlrpclib.ServerProxy(XMLRPC_SERVER)
 drupal.system.connect()
