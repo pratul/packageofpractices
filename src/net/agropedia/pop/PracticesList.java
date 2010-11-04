@@ -12,11 +12,13 @@ import java.util.HashMap;
 import org.xmlrpc.android.XMLRPCClient;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,12 +36,14 @@ public class PracticesList extends ListActivity {
 	private URI uri;
 	private XMLRPCClient client;
 	private static LayoutInflater mInflater;
-
+	private static ListView lv;
+	private static ProgressDialog fetchingData;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		ListView lv = getListView();
+
+		lv = getListView();
 
 		mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		tf = Typeface.createFromAsset(getAssets(), "fonts/Lohit-Hindi.ttf");
@@ -47,8 +51,20 @@ public class PracticesList extends ListActivity {
 		dbm = new DBManager(this);
 		dbm.open();
 
-		mAdapter = new PracticesListAdapter();
+		mAdapter = new PracticesListAdapter(this);
 		lv.setAdapter(mAdapter);
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		dbm.open();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		dbm.close();
 	}
 
 	@Override
@@ -73,48 +89,21 @@ public class PracticesList extends ListActivity {
     	TextView tvtitle;
     	TextView tvnid;
 
-    	public PracticesListAdapter() {
+    	public PracticesListAdapter(Context ctx) {
     		mNIDs = new ArrayList<Integer>();
     		mNodeTitles = new ArrayList<String>();
 
-    		c = dbm.db.query("practices", new String[] {"nid", "title"}, null, null, null, null, "nid DESC");
-    		if (c.moveToFirst()) {
+    		Cursor t = dbm.db.query("practices", new String[] {"nid"}, null, null, null, null, null);
+    		if (t.moveToFirst()) {
+    			Log.w("POP", "Going to get data from the db");
     			getDataFromDB();
-    			storeDataToDB();
     		} else {
-    			getDataFromNetwork(); // once we have it in db, then...
-    		}
-    	}
-
-    	@SuppressWarnings("unchecked")
-    	private void getDataFromNetwork() {
-    		uri = URI.create("http://a.pratul.in/services/xmlrpc");
-    		client = new XMLRPCClient(uri);
-
-    		try {
-    			Object[] r = (Object[]) client.callEx("agro.getpopnids", null);
-
-    			for (Object i : r) {
-    				String[] p = {"title"};
-    				Object[] params = {i, p};
-
-    				String tmptoSave = i.toString();
-    				Integer toSave = Integer.parseInt(tmptoSave);
-    				mNIDs.add(toSave);
-
-    				HashMap<String, String> n = (HashMap<String, String>) client.callEx("node.get", params);
-
-    				for (String k : n.keySet()) {
-    					String val = n.get(k);
-    					mNodeTitles.add(val);
-    				}
-    			}
-
-    		}
-    		catch (Exception e) {
-    			Log.w("POP", "ERROR AGAYA LOL", e);
+    			Log.w("POP", "Going to fetch data over network...");
+    			fetchingData = ProgressDialog.show(ctx, "Please wait", "Fetching data over the network...", true, true);
+    			new NetworkFetchTask().execute();
     		}
 
+    		t.close();
     	}
 
     	private void getDataFromDB() {
@@ -132,14 +121,64 @@ public class PracticesList extends ListActivity {
 
     	}
 
-    	private void storeDataToDB() {
-    		ContentValues values = new ContentValues();
+    	private class NetworkFetchTask extends AsyncTask<Void, Void, Void> {
 
-    		for (int pos = 0; pos < mNIDs.size(); pos++) {
-    			values.put("nid", mNIDs.get(pos));
-    			values.put("title", mNodeTitles.get(pos));
-    			dbm.db.insert("practices", null, values);
-    		}
+    		@SuppressWarnings("unchecked")
+			protected Void doInBackground(Void... params) {
+//	    		uri = URI.create("http://a.pratul.in/services/xmlrpc");
+	    		uri = URI.create("http://172.26.116.244/services/xmlrpc");
+	    		client = new XMLRPCClient(uri);
+
+	    		try {
+	    			Object[] r = (Object[]) client.callEx("agro.getpopnids", null);
+
+	    			for (Object i : r) {
+	    				String[] c = {"title"};
+	    				Object[] p = {i, c};
+
+	    				String tmptoSave = i.toString();
+	    				Log.w("POPLOOP", "NID is " + tmptoSave);
+	    				Integer toSave = Integer.parseInt(tmptoSave);
+	    				mNIDs.add(toSave);
+
+	    				HashMap<String, String> n = (HashMap<String, String>) client.callEx("node.get", p);
+
+	    				for (String k : n.keySet()) {
+	    					String val = n.get(k);
+	    					Log.w("POPLOOP", "TITLE IS " + val);
+	    					mNodeTitles.add(val);
+	    				}
+	    			}
+
+	    		}
+	    		catch (Exception e) {
+	    			Log.w("POP", "ERROR AGAYA LOL", e);
+	    		}
+
+				return null;
+			}
+
+			@Override
+			protected void onProgressUpdate(Void... values) {
+
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				fetchingData.dismiss();
+				lv.setAdapter(mAdapter);
+
+				ContentValues values = new ContentValues();
+
+	    		for (int pos = 0; pos < mNIDs.size(); pos++) {
+	    			values.put("nid", mNIDs.get(pos));
+	    			values.put("title", mNodeTitles.get(pos));
+	    			dbm.db.insert("practices", null, values);
+	    		}
+				Log.w("POP", "Async onPostExecute has run.");
+
+				dbm.close();
+			}
     	}
 
 
