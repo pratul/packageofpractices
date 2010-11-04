@@ -125,8 +125,7 @@ public class PracticesList extends ListActivity {
 
     		@SuppressWarnings("unchecked")
 			protected Void doInBackground(Void... params) {
-//	    		uri = URI.create("http://a.pratul.in/services/xmlrpc");
-	    		uri = URI.create("http://172.26.116.244/services/xmlrpc");
+                uri = URI.create("http://a.pratul.in/services/xmlrpc");
 	    		client = new XMLRPCClient(uri);
 
 	    		try {

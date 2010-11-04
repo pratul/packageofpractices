@@ -25,22 +25,21 @@ public class DBManager {
 	"title text not null, " +
 	"created integer, " +
 	"changed integer, " +
-	"teaser TEXT, " +
 	"body TEXT, " +
-	"f_introduction TEXT, " +
-	"f_climatic TEXT, " +
-	"f_soil TEXT, " +
-	"f_varieties TEXT, " +
-	"f_cropping TEXT, " +
-	"f_field_prep TEXT, " +
-	"f_seed_sowing TEXT, " +
-	"f_nutrient TEXT, " +
-	"f_water TEXT, " +
-	"f_weed TEXT, " +
-	"f_disease TEXT, " +
-	"f_insect TEXT, " +
-	"f_harvesting TEXT, " +
-	"f_yield TEXT" +
+	"field_introduction TEXT, " +
+	"field_climate_req TEXT, " +
+	"field_soil_condi TEXT, " +
+	"field_variti TEXT, " +
+	"field_cropping_sys TEXT, " +
+	"field_prep TEXT, " +
+	"field_seed_sowing TEXT, " +
+	"field_nutrient_mana TEXT, " +
+	"field_water_mana TEXT, " +
+	"field_weed_mana TEXT, " +
+	"field_disease_mana TEXT, " +
+	"field_insect_pest_mana TEXT, " +
+	"field_harvesting_threshing TEXT, " +
+	"field_yield TEXT" +
 	")";
 
 	public SQLiteDatabase db;
