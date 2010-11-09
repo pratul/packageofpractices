@@ -12,6 +12,7 @@ import org.xmlrpc.android.XMLRPCClient;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -118,8 +119,8 @@ public class PracticesView extends ListActivity {
     		c.moveToFirst();
 
     		int i = 0;
-    		while (i < 18) {
-//    			mData.add(c.getString(i));
+    		while (i < mColumns.length) {
+    			mData.put(c.getColumnName(i), c.getString(i));
     			i++;
     		}
 
@@ -181,13 +182,13 @@ public class PracticesView extends ListActivity {
 				fetchingData.dismiss();
 				lv.setAdapter(mAdapter);
 
-//				ContentValues values = new ContentValues();
-//
-//	    		for (int pos = 0; pos < mData.size(); pos++) {
-//	    			values.put("nid", mNIDs.get(pos));
-//	    			values.put("title", mNodeTitles.get(pos));
-//	    			dbm.db.insert("practices", null, values);
-//	    		}
+				String[] nodeid = new String[] {String.valueOf(nid)};
+				ContentValues values = new ContentValues();
+
+				for (String k : mData.keySet()) {
+	    			values.put(k, mData.get(k));
+	    			dbm.db.update("practices", values, "nid = ?", nodeid);
+	    		}
 				Log.w("POP", "Async onPostExecute has run.");
 
 				dbm.close();
