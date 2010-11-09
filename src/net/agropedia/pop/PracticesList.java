@@ -11,10 +11,13 @@ import java.util.HashMap;
 
 import org.xmlrpc.android.XMLRPCClient;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -78,9 +81,29 @@ public class PracticesList extends ListActivity {
 		b.putInt("nid", nid);
 
 		pv.putExtras(b);
-		startActivity(pv);
+		startActivityForResult(pv, Activity.RESULT_CANCELED);
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (requestCode == Activity.RESULT_CANCELED) {
+//			new AlertDialog.Builder(getApplicationContext())
+//				.setTitle("Error")
+//				.setMessage("Could not connect to Agropedia.")
+//				.setNeutralButton("OK", new NetworkFailDialogListener())
+//				.show();
+
+		}
+
+	}
+
+	private class NetworkFailDialogListener implements DialogInterface.OnClickListener {
+        public void onClick(DialogInterface dialog, int which) {
+        	// bazinga.
+        }
+	}
 
 	public class PracticesListAdapter extends BaseAdapter {
     	private final ArrayList<Integer> mNIDs;
@@ -152,6 +175,12 @@ public class PracticesList extends ListActivity {
 	    		}
 	    		catch (Exception e) {
 	    			Log.w("POP", "ERROR AGAYA LOL", e);
+
+	    			new AlertDialog.Builder(getApplicationContext())
+	    				.setTitle("Error")
+	    				.setMessage("Could not connect to Agropedia.")
+	    				.setNeutralButton("OK", new NetworkFailDialogListener())
+	    				.show();
 	    		}
 
 				return null;
@@ -182,7 +211,7 @@ public class PracticesList extends ListActivity {
 
 
     	/**
-    	 * Compulsory adapter methods
+    	 * Required adapter methods
     	 */
     	public int getCount() {
 			return mNodeTitles.size();

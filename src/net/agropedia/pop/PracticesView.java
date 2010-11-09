@@ -6,7 +6,6 @@
 package net.agropedia.pop;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.xmlrpc.android.XMLRPCClient;
@@ -36,6 +35,7 @@ public class PracticesView extends ListActivity {
 	private XMLRPCClient client;
 	private static ProgressDialog fetchingData;
 	private static ListView lv;
+	private String[] mColumns;
 
 
 	@Override
@@ -44,10 +44,29 @@ public class PracticesView extends ListActivity {
 
 		Bundle b = getIntent().getExtras();
 		nid = b.getInt("nid");
-		Log.w("POP pracview", nid.toString());
+		Log.w("Node ID for this view is", nid.toString());
 
 		dbm = new DBManager(this);
 		dbm.open();
+
+		mColumns = new String[] {"title",
+				"created",
+				"changed",
+				"body",
+				"field_introduction",
+				"field_climate_req",
+				"field_soil_condi",
+				"field_variti",
+				"field_cropping_sys",
+				"field_prep",
+				"field_seed_sowing",
+				"field_nutrient_mana",
+				"field_water_mana",
+				"field_weed_mana",
+				"field_disease_mana",
+				"field_insect_pest_mana",
+				"field_harvesting_threshing",
+				"field_yield"};
 
 		lv = getListView();
 		tf = Typeface.createFromAsset(getAssets(), "fonts/Lohit-Hindi.ttf");
@@ -71,11 +90,11 @@ public class PracticesView extends ListActivity {
 	private class PracticesViewAdapter extends BaseAdapter {
 
 		private final LayoutInflater mInflater;
-		private final ArrayList<String> mData;
+		private final HashMap<String, String> mData;
 
 		public PracticesViewAdapter(Context ctx) {
 			mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			mData = new ArrayList<String>();
+			mData = new HashMap<String, String>();
 
     		Cursor t = dbm.db.query("practices", new String[] {"changed"}, "nid = ?", new String[] {String.valueOf(nid)}, null, null, null);
     		t.moveToFirst();
@@ -94,32 +113,13 @@ public class PracticesView extends ListActivity {
 		}
 
 		private void getDataFromDB() {
-    		Cursor c = dbm.db.query("practices",
-    				new String[] {"title",
-    					"created",
-    					"changed",
-    					"body",
-    					"field_introduction",
-    					"field_climate_req",
-    					"field_soil_condi",
-    					"field_variti",
-    					"field_cropping_sys",
-    					"field_prep",
-    					"field_seed_sowing",
-    					"field_nutrient_mana",
-    					"field_water_mana",
-    					"field_weed_mana",
-    					"field_disease_mana",
-    					"field_insect_pest_mana",
-    					"field_harvesting_threshing",
-    					"field_yield"},
-    				"nid = ?", new String[] {String.valueOf(nid)}, null, null, null);
+    		Cursor c = dbm.db.query("practices", mColumns, "nid = ?", new String[] {String.valueOf(nid)}, null, null, null);
 
     		c.moveToFirst();
 
     		int i = 0;
     		while (i < 18) {
-    			mData.add(c.getString(i));
+//    			mData.add(c.getString(i));
     			i++;
     		}
 
@@ -136,46 +136,40 @@ public class PracticesView extends ListActivity {
 	    		client = new XMLRPCClient(uri);
 
 	    		try {
-//	    			Object[] r = (Object[]) client.callEx("node.get", null);
-
-//	    			for (Object i : r) {
-	    				String[] c = {"title",
-	    						"created",
-	        					"changed",
-	        					"body",
-	        					"field_introduction",
-	        					"field_climate_req",
-	        					"field_soil_condi",
-	        					"field_variti",
-	        					"field_cropping_sys",
-	        					"field_prep",
-	        					"field_seed_sowing",
-	        					"field_nutrient_mana",
-	        					"field_water_mana",
-	        					"field_weed_mana",
-	        					"field_disease_mana",
-	        					"field_insect_pest_mana",
-	        					"field_harvesting_threshing",
-	        					"field_yield"};
-	    				Object[] p = {nid, c};
+	    				Object[] p = {nid, mColumns};
 
 	    				HashMap<String, Object> n = (HashMap<String, Object>) client.callEx("node.get", p);
 
 	    				for (String k : n.keySet()) {
 	    					Object val = n.get(k);
-	    					Log.w("POPLOOP", "KEY IS " + k);
-	    					Log.w("POPLOOP", "VALUE IS " + val);
-//	    					mNodeTitles.add(val);
-	    				}
-//	    			}
+	    					Log.w("Current key is", k);
+	    					String clas = val.getClass().getSimpleName();
 
+	    					String ref = "String";
+	    					if (clas.equals(ref)) {
+	    						mData.put(k, val.toString());
+	    					} else {
+	    						Object[] bigarray = (Object[]) val;
+	    						HashMap<String, String> smallarray = (HashMap<String, String>) bigarray[0];
+	    						mData.put(k, smallarray.get("value"));
+	    					}
+
+	    				}
 	    		}
 	    		catch (Exception e) {
 	    			Log.w("POP", "ERROR AGAYA LOL", e);
+	    			cancel(false);
 	    		}
-
 				return null;
-			}
+
+    		}
+
+    		@Override
+			protected void onCancelled() {
+//    			setResult(Activity.RESULT_CANCELED);
+    			finish();
+
+    		}
 
 			@Override
 			protected void onProgressUpdate(Void... values) {
@@ -201,13 +195,15 @@ public class PracticesView extends ListActivity {
     	}
 
 
-
+    	/**
+    	 * Required adapter methods
+    	 */
     	public int getCount() {
     		return mData.size();
 		}
 
 		public Object getItem(int position) {
-			return mData.get(position);
+			return mData.get(mColumns[position]);
 		}
 
 		public long getItemId(int position) {
@@ -221,7 +217,7 @@ public class PracticesView extends ListActivity {
 			}
 
 			tvr = (TextView) convertView.findViewById(R.id.tv_practicesview_row);
-			tvr.setText(mData.get(position));
+			tvr.setText(mData.get(mColumns[position]));
 			tvr.setTypeface(tf);
 
 			return convertView;
